@@ -1,6 +1,7 @@
 import Users from '../models/Users.js';
 import Media from "../models/Media.js";
 import Events from "../models/Events.js";
+import EventInvitedes from "../models/Event.invitedes.js";
 import fs from "fs";
 import path from "path";
 import {sendMail} from "../services/Mail.js";
@@ -120,6 +121,31 @@ export default {
                 message: 'Failed to fetch posts',
                 error: error.message,
             });
+        }
+    },
+    subscribeEvent: async (req, res) => {
+        try {
+            const { username, email } = req.body;
+            const { id } = req.query;
+
+            const event = await Events.findByPk(id);
+            if (!event) {
+                return res.status(404).json({ message: 'Event not found' });
+            }
+
+            const subscribeEvent = await EventInvitedes.create({
+                username,
+                email,
+                registerId: event.id,
+            });
+
+            return res.status(201).json({
+                message: 'Event subscribed successfully',
+                subscribeEvent,
+            });
+        } catch (error) {
+            console.error('Register Event Error:', error);
+            return res.status(500).json({ message: 'Internal Server Error' });
         }
     },
 

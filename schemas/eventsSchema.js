@@ -7,9 +7,13 @@ export default {
         date: Joi.date().iso().required(),
         location: Joi.string().min(1).max(100).required(),
     }),
-    getPosts: Joi.object({
+    getEvents: Joi.object({
         page: Joi.number().integer().min(1).max(10000000).default(1).optional(),
         limit: Joi.number().integer().min(5).max(20).default(5).optional(),
     }),
+    subscribeEvent: Joi.object({
+        username: Joi.string().min(1).max(25).required(),
+        email: Joi.string().email().required(),
+    })
 
 };

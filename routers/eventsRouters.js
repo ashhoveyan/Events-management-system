@@ -22,8 +22,13 @@ router.post(
 
 router.get('/list',
     authenticate,
-    validate(eventsSchema.getPosts, 'query'),
+    validate(eventsSchema.getEvents, 'query'),
     eventsController.getEvents
 )
+router.post(
+    '/single/subscribe',
+    validate(eventsSchema.subscribeEvent, 'body'),
+    eventsController.subscribeEvent
+);
 
 export default router;
