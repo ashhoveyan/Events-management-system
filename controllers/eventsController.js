@@ -152,7 +152,7 @@ export default {
         try {
             const { id } = req.params;
             const { id: userId } = req.user;
-            const { title, description, dateTime, location } = req.body;
+            const { title, description, date, location } = req.body;
             const { files } = req.files ? req.files.path.replace('public/', '') : null;
 
 
@@ -175,7 +175,7 @@ export default {
             }
 
             await Events.update(
-                { title, description, dateTime, location },
+                { title, description, date, location },
                 { where: { id } }
             );
 
@@ -211,7 +211,7 @@ export default {
                     templateData: {
                         title: event.title,
                         description: event.description,
-                        dateTime: new Date(event.dateTime).toLocaleString(),
+                        date: new Date(event.date),
                         location: event.location,
                     },
                 });
