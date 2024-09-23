@@ -148,5 +148,79 @@ export default {
             return res.status(500).json({ message: 'Internal Server Error' });
         }
     },
+    updateEvent: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { id: userId } = req.user;
+            const { title, description, dateTime, location } = req.body;
+            const { files } = req.files ? req.files.path.replace('public/', '') : null;
+
+
+            const event = await Events.findOne({
+                where: { id, userId },
+                include: {
+                    model: Media,
+                },
+            });
+
+            if (!event) {
+                if (req.file) {
+                    try {
+                        await fs.unlinkSync(req.file.path);
+                    } catch (unlinkErr) {
+                        console.error('File removal failed:', unlinkErr);
+                    }
+                }
+                return res.status(403).json({ message: 'You are not allowed to edit this event' });
+            }
+
+            await Events.update(
+                { title, description, dateTime, location },
+                { where: { id } }
+            );
+
+            const pathPhotos = await Media.findAll({ where: { eventId: event.id } });
+            for (let i = 0; i < pathPhotos.length; i++) {
+                const media = pathPhotos[i];
+                try {
+                    await fs.promises.unlink(path.resolve('public', media.path));
+                } catch (error) {
+                    console.error('Failed to delete old media file:', media.path, error);
+                }
+            }
+            await Media.destroy({ where: { eventId: event.id } });
+            if (files) {
+                for (let photo of files) {
+                    await Media.create({
+                        path: files.path,
+                        eventId: event.id,
+                    });
+                }
+            }
+
+            const subscribedUsers = await EventInvitedes.findAll({
+                where: { registerId: event.id },
+                attributes: ['email'],
+            });
+
+            for (const user of subscribedUsers) {
+              await  sendMail({
+                    to:  user.email,
+                    subject: 'Event Update',
+                    template: 'UpdatedEventPage',
+                    templateData: {
+                        title: event.title,
+                        description: event.description,
+                        dateTime: new Date(event.dateTime).toLocaleString(),
+                        location: event.location,
+                    },
+                });
+            }
+            res.status(200).json({ message: 'Event updated successfully', event });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: error.message, status: 500 });
+        }
+    },
 
 }

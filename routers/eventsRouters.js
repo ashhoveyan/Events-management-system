@@ -30,5 +30,11 @@ router.post(
     validate(eventsSchema.subscribeEvent, 'body'),
     eventsController.subscribeEvent
 );
+router.put(
+    '/update/:id',
+    fileUpload.array('images', 5),
+    authenticate,
+    eventsController.updateEvent
+);
 
 export default router;
