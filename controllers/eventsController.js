@@ -10,7 +10,7 @@ export default {
     createEvents: async (req, res) => {
         if (!req?.files?.length) {
             res.status(422).send({
-                message: 'Images are required.',
+                message: 'Images are required..',
             });
             return
         }
